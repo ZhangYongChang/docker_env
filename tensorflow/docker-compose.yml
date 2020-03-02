@@ -1,0 +1,13 @@
+version: '2.3'
+
+services:
+  tf-gpu:
+    image: tensorflow/tensorflow:2.0.0-gpu-py3-jupyter
+    ports:
+      - 8888:8888
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+    volumes:
+      - ./notebooks:/tf
+      - ./config:/root/
