@@ -37,18 +37,22 @@ class Option(object):
             setattr(self, key, val)
 
 
-def main(argv):
-    filepath = "bundle.json"
-    if (len(argv) == 2):
-        filepath = argv[1]
-
+def load_options(filepath):
     cmd_options = {}
     options = load_config(filepath)
     for item in options:
         option = Option()
         option.from_json_string(json.dumps(item))
         cmd_options[option.command] = option
+    return cmd_options
 
+
+def main(argv):
+    filepath = "bundle.json"
+    if (len(argv) == 2):
+        filepath = argv[1]
+
+    cmd_options = load_options(filepath)
     cmdmodules = {}
     xgendir = os.path.dirname(sys.modules['xgen'].__file__)
     for cmdfile in glob.glob(xgendir + '/cmd_*.py'):
