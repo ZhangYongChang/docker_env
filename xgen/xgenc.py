@@ -20,7 +20,7 @@ streamHandler.setLevel(logging.INFO)
 logger.addHandler(streamHandler)
 
 
-def load_config(filepath='bundle.json'):
+def load_config(filepath='config.json'):
     with open(filepath, 'r') as f:
         options = json.load(f)
         return options
@@ -46,42 +46,40 @@ def load_options(filepath):
         cmd_options[option.command] = option
     return cmd_options
 
+def config_logger(options):
+    fileHandler = logging.FileHandler(filename=options.logfile)
+    fileHandler.setLevel(options.loglevel)
+    fileHandler.setFormatter(logging.Formatter(
+        fmt='[%(asctime)s][%(levelname)s][%(threadName)s][%(filename)s:%(funcName)s:%(lineno)s]%(message)s'))
+    logger.addHandler(fileHandler)
+
 
 def main(argv):
-    filepath = "bundle.json"
+    filepath = "config.json"
     if (len(argv) == 2):
         filepath = argv[1]
 
     cmd_options = load_options(filepath)
     cmdmodules = {}
-    xgendir = os.path.dirname(sys.modules['xgen'].__file__)
-    for cmdfile in glob.glob(xgendir + '/cmd_*.py'):
-        cmdmod = re.search('cmd_(\w+).py', cmdfile).group(1)
+    for key, options in cmd_options.items():
+        if options.logfile:
+            config_logger(options)
+
         try:
-            module = __import__('xgen.cmd_' + cmdmod,
-                                globals(), locals(), ['*'], 0)
+            module = __import__('xgen.cmd_' + options.command, globals(), locals(), ['*'], 0)
         except Exception as e:
-            print(e)
+            logger.error('can not import subcommand (%s)' % options.command)
+            logger.error('exception: (%s)' % e)
             pass
         else:
             if hasattr(module, 'makeoptions') and hasattr(module, 'run'):
-                cmdmodules[cmdmod] = module
+                cmdmodules[options.command] = module
             else:
-                pass
+                pass        
 
-    for key, options in cmd_options.items():
-        if options.logfile:
-            fileHandler = logging.FileHandler(filename=options.logfile)
-            fileHandler.setLevel(options.loglevel)
-            fileHandler.setFormatter(logging.Formatter(
-                fmt='[%(asctime)s][%(levelname)s][%(threadName)s][%(filename)s:%(funcName)s:%(lineno)s]%(message)s'))
-            logger.addHandler(fileHandler)
-
-        logger.info('xgenc command %s start for %s' %
-                    (options.command, options.input))
+        logger.info('xgenc command %s start for %s' % (options.command, options.input))
         cmdmodules[options.command].run(options)
-        logger.info('xgenc command %s end for %s' %
-                    (options.command, options.input))
+        logger.info('xgenc command %s end for %s' % (options.command, options.input))
 
 
 if __name__ == '__main__':

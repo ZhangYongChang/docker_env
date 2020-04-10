@@ -82,7 +82,6 @@ import "ypk.proto";
 
 package {{ybundle}}PB.{{modpbname}};
 
-
 {% for name,complextype in ymod.m_complex_type_dict|dictsort %}
 {% set ns = namespace(index = 2048) %}
 message {{complextype.m_name_pb}}
