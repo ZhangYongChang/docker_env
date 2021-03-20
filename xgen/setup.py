@@ -16,6 +16,6 @@ setup(
         "Topic :: Utilities",
         "Programming Language :: Python :: 3.6",
     ],
-    install_requires=['pyang==1.7.3', 'jinja2==2.10'],
+    install_requires=['pyang==1.7.3', 'jinja2==2.11.3'],
     scripts=['xgenc.py'],
 )
